@@ -1,13 +1,16 @@
 import numpy as np
+import numpy.linalg as linalg
 import matplotlib.pyplot as plt
 from collective_function import collective_width
 import sklearn.linear_model as lm
+import apr
+
 # #  программа которая рассчитывает фрактальную размерность аттрактора. Необходимо восползоваться программой,
 # которая считает ширину отрезка collective_function
 # известна минимальное значение и максимальное значение. Необходимо покрыть гиперкуб гиперкубиками
 
 # vars
-el, it = 3, 2000
+el, it = 5, 2000
 
 start_it = 900
 d = .25
@@ -47,7 +50,7 @@ def fractal_dimenshion(el, it, start_it, d, a, alpha, beta, nonlinear, delta):
     x = []
     y = []
     Quant1 = 1000
-    Quant = 10
+    Quant = 0
     res = 10
     n = 1
     o = 0
@@ -59,7 +62,7 @@ def fractal_dimenshion(el, it, start_it, d, a, alpha, beta, nonlinear, delta):
         VarCube = np.zeros((QuantCube, el))
 
         mem = ['']  # переменная для хранения символов кубов
-
+        Quant = 0
         for i in range(it):
             save = np.zeros(el)  # переменная для сохранения индексов кубика
             ##  На каждой итерации создаем эту переменную, чтобы не занимать слишком много памяти, она будет
@@ -86,24 +89,6 @@ def fractal_dimenshion(el, it, start_it, d, a, alpha, beta, nonlinear, delta):
                         print("CHERNYA")
                         #print('попадание на границу гиперкубов')
                     EqLeft += step
-
-            '''
-            #print(symbol)
-            if i == 0:
-                mem.append(symbol)
-                s = 1
-            elif i!= 0:
-                for k in range(len(mem)):
-                    if mem[k] == symbol:
-                        #print(mem)
-                        s = 0
-                        break
-                    elif mem[k] != "" and mem[k] != symbol:
-                        mem.append(symbol)
-                        s = 1
-            if s == 1:
-                #print('yes')
-                Quant += 1'''
             symbol1 = ''
 
             if i == 0:
@@ -116,7 +101,6 @@ def fractal_dimenshion(el, it, start_it, d, a, alpha, beta, nonlinear, delta):
                         if j == 0:
                             if save[k] == 0:
                                 print('error')
-
                             symbol1 += str(save[k])
                             symbol2 += str(VarCube[j][k])
                         else:
@@ -126,17 +110,11 @@ def fractal_dimenshion(el, it, start_it, d, a, alpha, beta, nonlinear, delta):
                         break
                     else:
                         s = 0
-
             if s == 0:
                 Quant += 1
-
         D = - np.log(Quant)/np.log(step)
-
-        #print(D)
-        if n == 1:
-            n += 1
-        else:
-            n *= 2
+        print(D)
+        n *= 2
         QuantCube = (2 ** el) ** n
         QuantStep = QuantStep * 2
         #print(step)
@@ -147,27 +125,21 @@ def fractal_dimenshion(el, it, start_it, d, a, alpha, beta, nonlinear, delta):
         res = Quant1 - Quant
         print(Quant1, Quant)
         Quant1 = Quant
-        if o > 5:
+        if o >= 3:
             plt.plot(y,x, '.')
             plt.show()
-
-    print(x,y)
-    skm = lm.LinearRegression()
-    skm.fit(y, x)
-    print('coef', skm.coef_)
+            x1 = np.zeros(len(x))
+            y1 = np.zeros((len(y)))
+            apr.mnkGP(y,x)
     return D
 
 
-
-
-var_d = np.arange(.47 , .49, .0001)
+var_d = np.arange(.45 , .49, .0001)
 x = np.zeros(len(var_d))
 y = np.zeros(len(var_d))
 for i in range(len(var_d)):
     d = var_d[i]
 
     y[i] = fractal_dimenshion(el, it, start_it, d, a, alpha, beta, nonlinear, delta)
-    #print(y[i])
-    #print(d)
 plt.plot(var_d,y,'.')
 plt.show()
