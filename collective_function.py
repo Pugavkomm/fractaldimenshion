@@ -16,10 +16,5 @@ def collective_width(el, it, start_it, d, a, alpha, beta, nonlinear):
         else:
             matrix = np.vstack((matrix, elements[i][start_it:]))
     del elements
-    minim = matrix.min()
-    maxim = matrix.max()
-    matrix = np.vstack((matrix, np.zeros(it - start_it)))
-    matrix[el][0] = minim
-    matrix[el][1] = maxim
     return matrix
 
