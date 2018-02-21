@@ -4,21 +4,11 @@ import matplotlib.pyplot as plt
 from collective_function import collective_width
 import sklearn.linear_model as lm
 import apr
+import multiprocessing
 
 # #  программа которая рассчитывает фрактальную размерность аттрактора. Необходимо восползоваться программой,
 # которая считает ширину отрезка collective_function
 # известна минимальное значение и максимальное значение. Необходимо покрыть гиперкуб гиперкубиками
-
-# vars
-el, it = 7, 9000
-
-start_it = 2000
-d = .25
-alpha = .2
-beta = 0
-nonlinear = 'piece'
-a = 0
-delta = .1
 
 
 def shift(el, it, start_it, d, a, alpha, beta, nonlinear):
@@ -30,8 +20,6 @@ def shift(el, it, start_it, d, a, alpha, beta, nonlinear):
     mean = abs((maxim - minim) / 2)
     matrix = matrix + abs(minim) - mean
     return matrix
-
-
 def fractal_dimenshion(el, it, start_it, d, a, alpha, beta, nonlinear, delta):
     elements = shift(el, it, start_it, d, a, alpha, beta, nonlinear)
     minim = elements.min()
@@ -44,21 +32,17 @@ def fractal_dimenshion(el, it, start_it, d, a, alpha, beta, nonlinear, delta):
     step = epsilon / 2
     # создаем переменные для работы с гиперкубиками:
     accurancy = 10  # задаем исходную точность для начала цикла
-    D1 = -10000
     s = 0
-    x = []
-    y = []
-    Quant1 = 1000
-
-    res = 10
     n = 1
-    o = 8
+    o = 6
     itstep = it - start_it
     x = []
     y = []
     for l in range(o):
+        print(l)
         Quant = 0
         for i in range(itstep):
+
             save1 = np.zeros(el)
             for j in range(el):
                 EqLeft = -(abs(maxim) + abs(minim)) / 2
@@ -95,7 +79,7 @@ def fractal_dimenshion(el, it, start_it, d, a, alpha, beta, nonlinear, delta):
                 Quant += 1
                 save = np.vstack((save, save1))
         #print(Quant)
-        if l > 0:
+        if l > 1:
             x.append(np.log(step))
             y.append(np.log(Quant))
         n *= 2
@@ -106,19 +90,30 @@ def fractal_dimenshion(el, it, start_it, d, a, alpha, beta, nonlinear, delta):
     #D = -np.log(Quant)/np.log(step)
     #print(D)
     D1 = -apr.mnkGP(x,y)
-    #plt.plot(x, y, '.')
-    #plt.show()
+    plt.plot(x, y, '.', linestyle ='--')
+    plt.show()
+    print(D1)
     return D1
 
 
-var_d = np.arange(.44 , .4801, .0001)
-
+var_d = np.arange(.40 , .46, .0001)
 x = np.zeros(len(var_d))
 y = np.zeros(len(var_d))
-for i in range(len(var_d)):
-    d = var_d[i]
+for i in range(1):
 
-    y[i] = fractal_dimenshion(el, it, start_it, d, a, alpha, beta, nonlinear, delta)
-    print(y[i])
+    def func(d):
+        el, it = 20, 15
+        start_it = 1000
+
+        alpha = .2
+        beta = 0
+        nonlinear = 'piece'
+        a = 0
+        delta = .1
+        return fractal_dimenshion(el, it, start_it, d, a, alpha, beta, nonlinear, delta)
+    d = var_d
+    pool = multiprocessing.Pool(processes=3)
+    y = pool.map(func, d)
+
 plt.plot(var_d,y,'.', linestyle = '--')
 plt.show()
