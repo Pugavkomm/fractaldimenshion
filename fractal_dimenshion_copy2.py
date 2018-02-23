@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from collective_function import collective_width
 import multiprocessing
-
+import pylab
 
 # #  программа которая рассчитывает фрактальную размерность аттрактора. Необходимо восползоваться программой,
 # которая считает ширину отрезка collective_function
@@ -22,6 +22,8 @@ def shift(el, it, start_it, d, a, alpha, beta, nonlinear):
 
 def fractal_dimenshion(el, it, start_it, d, a, alpha, beta, nonlinear, delta):
     elements = collective_width(el, it, start_it, d, a, alpha, beta, nonlinear)
+    #plt.plot(elements[0], elements[1], '.')
+    #plt.show()
     minim = elements.min()
     maxim = elements.max()
     it = it - start_it
@@ -35,9 +37,12 @@ def fractal_dimenshion(el, it, start_it, d, a, alpha, beta, nonlinear, delta):
     n = 1
     itstep = it - start_it
     l = 0
-    D2 = 10
-    while accurancy > delta:
-        l += 1
+    D2 = 1000
+    o = 6
+    x = np.zeros(o)
+    y = np.zeros(o)
+    for l in range(o):
+
         Quant = 0
         for i in range(itstep):
 
@@ -79,32 +84,39 @@ def fractal_dimenshion(el, it, start_it, d, a, alpha, beta, nonlinear, delta):
                 Quant += 1
                 save = np.vstack((save, save1))
         n *= 2
+        x[l] = np.log(step)
+        y[l] = np.log(Quant)
         D = -np.log(Quant) / np.log(step)
+
         accurancy = abs(D2 - D) / D
+
         D2 = D
-        print(accurancy)
+
         QuantStep *= 2
         step /= 2
-    return D
+
+    m, b = pylab.polyfit(x, y, 1)
+    #pylab.plot(x, y, 'yo', x, m*x+b, '--k')
+    #pylab.show()
+    print('d = ', d, ', m = ', -m)
+    return -m
 
 
-var_d = np.arange(.4, .46, .0001)
+var_d = np.arange(.46, .47, .0001)
 x = np.zeros(len(var_d))
 y = np.zeros(len(var_d))
 for i in range(1):
     def func(d):
-        el, it = 20, 20000
+        el, it = 7, 4000
         start_it = 1000
         alpha = .2
         beta = 0
         nonlinear = 'piece'
         a = 0
-        delta = .01
+        delta = .1
         return fractal_dimenshion(el, it, start_it, d, a, alpha, beta, nonlinear, delta)
-
-
     d = var_d
-    pool = multiprocessing.Pool(processes=4)
+    pool = multiprocessing.Pool(processes=3)
     y = pool.map(func, d)
 plt.plot(var_d, y, '.', linestyle='--')
 plt.savefig('img')
