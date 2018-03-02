@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 from collective_function import collective_width
 import multiprocessing
 import pylab
-
+import time
 # #  программа которая рассчитывает фрактальную размерность аттрактора. Необходимо восползоваться программой,
 # которая считает ширину отрезка collective_function
 # известна минимальное значение и максимальное значение. Необходимо покрыть гиперкуб гиперкубиками
@@ -33,11 +33,14 @@ def fractal_dimenshion(el, it, start_it, d, a, alpha, beta, nonlinear, delta):
     s = 0  # переменная характеризующая включение для того, чтобы определять попала ли точка в новый кубик или нет
     itstep = it - start_it  # так как выкидываем начало, то смещаем количество итераций
     points = 12 # количество итераций (делений стороны на 2)
-    x = np.zeros(points )
-    y = np.zeros(points )
-    for l in range(points):  # основной цикл, в нем происходит деление пополам
+    x = []
+    y = []
+    l = 0
+    D2 = -100
+    while accurancy > delta: # основной цикл, в нем происходит деление пополам
         quant = 0
-        print(l)
+        l += 1
+        #print(l)
         # пербираем все элементы и проверяем попали ли они в гиперкубик
         for i in range(itstep):
             save1 = np.zeros(el)
@@ -81,32 +84,38 @@ def fractal_dimenshion(el, it, start_it, d, a, alpha, beta, nonlinear, delta):
             if s == 0:
                 quant += 1
                 save = np.vstack((save, save1))
-        if l >= 0:
+        ##if l >= 0:
 
-            x[l] = np.log(step)
-            y[l] = np.log(quant)
+
         D = -np.log(quant) / np.log(step)
+        accurancy = abs(D - D2)
+        #print(accurancy)
         D2 = D
+
         quantstep *= 2
         step /= 2
-    m, b = pylab.polyfit(x, y, 1)
-    pylab.plot(x, y, 'yo', x, m*x+b, '--k')
-    pylab.show()
-    print('d = ', d, ', m = ', -m)
-    return -m
-var_d = np.arange(.48, .6, .0001)
+        x.append(step)
+        y.append(quant)
+        #if l > 2:
+            #m, b = pylab.polyfit(x, y, 1)
+            #print(m, b)
+            #pylab.plot(x, y, 'yo')
+            #pylab.show()
+    print('good --->>> d = ', d, ', m = ', D, ', time = ', round(time.time()/3600, 4))
+    return D
+var_d = np.arange(.53, .6, .001)
 print(var_d)
 x = np.zeros(len(var_d))
 y = np.zeros(len(var_d))
 for i in range(1):
     def func(d):
-        el, it = 4, 4500
-        start_it =  1200
+        el, it = 2, 20000
+        start_it =  2500
         alpha = .2
         beta = 0
         nonlinear = 'piece'
         a = 0
-        delta = .1
+        delta = .05
         return fractal_dimenshion(el, it, start_it, d, a, alpha, beta, nonlinear, delta)
     d = var_d
     pool = multiprocessing.Pool(processes=4)
